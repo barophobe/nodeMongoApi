@@ -21,8 +21,14 @@ app.post('/todos', (req, res) => {
 	});
 
 });
-
-
+// using an object instead of an array allows you to be more flexible, ie can add properties etc easier to object than if it was an array. ref: res.send
+app.get('/todos', (req, res) => {
+	Todo.find().then((todos) => {
+		res.send({todos});
+	}, (e) => {
+		res.status(400).send(e);
+	})
+});
 
 
 app.listen(3000, () => {
