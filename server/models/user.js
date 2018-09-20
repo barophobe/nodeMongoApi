@@ -32,8 +32,9 @@ var UserSchema = new mongoose.Schema({
         }]
     });
 
+//.methods mean an instance method as opposed to a model method
 UserSchema.methods.toJSON = function () {
-	var user = this;
+	var user = this; //this binded to the document not the model..small u!
 	var userObject = user.toObject();
 
 	return _.pick(userObject, ['_id', 'email']);
@@ -49,6 +50,25 @@ UserSchema.methods.generateAuthToken = function () {
 	return user.save().then(() => {
 		return token;
 	});
+};
+//statics mean it becomes a model method as opposed to an instance method.
+UserSchema.statics.findByToken = function(token) {
+  var User = this; //model methods get called with model as the 'this' binding, not the document... big U!!
+  var decoded;
+
+  try {
+    decoded = jwt.verify(token, 'abc123');
+  } catch(e) {
+   /* return new Promise((resolve, reject) => {
+        reject();
+    });*/
+   return Promise.reject(); //same as ablove. if we put an arg in reject it becomes the (e) in catch
+  }
+  return User.findOne({
+      '_id': decoded._id,
+      'tokens.token': token,
+      'tokens.access': 'auth'
+  });
 };
 
 var User = mongoose.model('User', UserSchema);
